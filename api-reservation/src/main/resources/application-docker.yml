@@ -1,0 +1,58 @@
+management:
+  endpoint:
+    health:
+      show-details: never
+  endpoints:
+    web:
+      base-path: /
+      exposure:
+        include: health,info
+server:
+  port: 3070
+  servlet:
+    context-path: /api/flights/reservation
+
+spring:
+  datasource:
+    url: "jdbc:mysql://api-reservation-db:3306/flights_reservation?autoReconnect=true"
+    username: root
+    password: muppet
+    validation-query: select 1;
+    maxActive: 100
+  jpa:
+    show-sql: false
+    generate-ddl: false
+    properties:
+      hibernate:
+        ejb.naming_strategy: org.hibernate.cfg.ImprovedNamingStrategy
+        dialect: org.hibernate.dialect.MySQL57Dialect
+        hbm2ddl.auto: update
+
+http-connector:
+  defaultConfig: &commonDefaultConfig
+    connectionTimeout: 5000
+    readTimeout: 5000
+    responseTimeout: 5000
+  hosts:
+    api-catalog:
+      host: "api-catalog"
+      port: 6070
+      defaultConfig: &hostDefaultConfig
+        <<: *commonDefaultConfig
+        responseTimeout: 2000
+      endpoints:
+        country-by-id:
+          <<: *hostDefaultConfig
+          path: "/api/flights/catalog/country/{nationality}"
+          connectionTimeout: 4000
+    api-clusters:
+      host: "api-clusters"
+      port: 4070
+      defaultConfig: &hostDefaultConfig
+        <<: *commonDefaultConfig
+        responseTimeout: 2000
+      endpoints:
+        clusters-by-id:
+          <<: *hostDefaultConfig
+          path: "/api/flights/clusters/itineraries/{id}/itinerary/{itineraryId}"
+          connectionTimeout: 4000
